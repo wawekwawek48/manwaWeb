@@ -1,5 +1,3 @@
-'use client';
-
 import Navbar from '../../components/Navbar';
 import Card from '../../components/Card';
 import Link from 'next/link';
