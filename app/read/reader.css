@@ -1,0 +1,43 @@
+.reader {
+  background: #000;
+  color: #fff;
+  min-height: 100vh;
+}
+
+.reader-header {
+  text-align: center;
+  padding: 16px;
+  border-bottom: 1px solid #222;
+}
+
+.reader-header h1 {
+  font-size: 20px;
+  text-transform: capitalize;
+}
+
+.reader-header p {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.reader-content {
+  max-width: 900px;
+  margin: auto;
+}
+
+.page {
+  margin: 0;
+}
+
+.page-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.reader-footer {
+  text-align: center;
+  padding: 24px;
+  color: #888;
+  font-size: 14px;
+}
