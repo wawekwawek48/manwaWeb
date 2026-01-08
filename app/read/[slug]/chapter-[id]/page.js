@@ -1,56 +1,82 @@
-import Navbar from '../../../components/Navbar';
-import Link from 'next/link';
-import { getMangaBySlug } from '@/lib/data';
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getMangaBySlug } from "@/lib/data";
 
-export default function Reader({ params }) {
-  const manga = getMangaBySlug(params.slug);
-  const chapterId = `chapter-${params.id}`; // Format key di JSON adalah 'chapter_1', url adalah 'chapter-1'
-  // Perlu penyesuaian sedikit jika URL pakai dash tapi JSON pakai underscore
-  const safeChapterKey = chapterId.replace('-', '_'); 
+export default function ReaderPage({ params }) {
+  const { slug, id } = params;
 
-  // Ambil array gambar dari JSON
-  const images = manga?.image?.[safeChapterKey] || [];
+  // Ambil data manga (SERVER ONLY, pakai fs di lib/data.js)
+  const manga = getMangaBySlug(slug);
+  if (!manga) return notFound();
+
+  // chapter-1 -> chapter_1
+  const chapterKey = `chapter_${id}`;
+
+  // Ambil array image
+  const images = manga.image?.[chapterKey];
+  if (!images || images.length === 0) return notFound();
 
   return (
-    <>
-      {/* Navbar Hidden by default logic using CSS/JS can be added, here keeping it fixed or hidden via class */}
-      {/* <Navbar />  */} 
-      
-      <div className="max-w-[800px] mx-auto bg-black min-h-screen pb-20">
-        
-        {/* Sticky Header */}
-        <div className="sticky top-0 bg-[#161616] p-4 text-center z-40 border-b border-white/10 shadow-lg flex justify-between items-center">
-          <Link href={`/detail/${manga.id}`} className="text-cyan-400 hover:underline">
-            &larr; Back
+    <div className="bg-black min-h-screen">
+      {/* HEADER */}
+      <div className="sticky top-0 z-50 bg-[#161616] border-b border-white/10">
+        <div className="max-w-[900px] mx-auto px-4 py-3 flex items-center justify-between">
+          <Link
+            href={`/detail/${manga.id}`}
+            className="text-cyan-400 hover:underline"
+          >
+            ← Back
           </Link>
-          <div className="font-bold truncate px-4">
-            {manga?.title} - <span className="text-purple-400">{safeChapterKey.replace('_', ' ')}</span>
+
+          <div className="text-sm font-semibold truncate text-center px-4">
+            {manga.title}
+            <span className="text-purple-400">
+              {" "}
+              • Chapter {id}
+            </span>
           </div>
-          <div className="w-20"></div> {/* Spacer */}
-        </div>
 
-        {/* Vertical Images */}
-        <div className="flex flex-col w-full">
-          {images.map((imgSrc, idx) => (
-            <img 
-              key={idx} 
-              src={imgSrc} 
-              alt={`Page ${idx+1}`} 
-              className="w-full h-auto block"
-              loading="lazy"
-            />
-          ))}
+          <div className="w-12" />
         </div>
-
-        {/* Auto Load Button (Simulation) */}
-        <div className="py-10 text-center text-gray-500 bg-[#111] mt-4">
-          <p className="mb-4">End of Chapter</p>
-          <button className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-500 transition">
-            Load Next Chapter
-          </button>
-        </div>
-
       </div>
-    </>
+
+      {/* IMAGE READER */}
+      <div className="max-w-[900px] mx-auto flex flex-col">
+        {images.map((src, index) => (
+          <img
+            key={index}
+            src={src}
+            alt={`Page ${index + 1}`}
+            className="w-full h-auto block"
+            loading="lazy"
+          />
+        ))}
+      </div>
+
+      {/* FOOTER */}
+      <div className="max-w-[900px] mx-auto py-10 text-center text-gray-400">
+        <p className="mb-4">End of Chapter</p>
+
+        <div className="flex justify-center gap-4">
+          {Number(id) > 1 && (
+            <Link
+              href={`/read/${slug}/chapter-${Number(id) - 1}`}
+              className="px-5 py-2 rounded-full bg-gray-700 hover:bg-gray-600 transition"
+            >
+              ← Prev
+            </Link>
+          )}
+
+          {manga.image[`chapter_${Number(id) + 1}`] && (
+            <Link
+              href={`/read/${slug}/chapter-${Number(id) + 1}`}
+              className="px-5 py-2 rounded-full bg-purple-600 hover:bg-purple-500 transition"
+            >
+              Next →
+            </Link>
+          )}
+        </div>
+      </div>
+    </div>
   );
-  }
+                             }
