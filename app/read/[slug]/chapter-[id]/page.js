@@ -5,16 +5,21 @@ import { getMangaBySlug } from "@/lib/data";
 export default function ReaderPage({ params }) {
   const { slug, id } = params;
 
-  // Ambil data manga (SERVER ONLY, pakai fs di lib/data.js)
+  // Ambil data manga
   const manga = getMangaBySlug(slug);
   if (!manga) return notFound();
 
-  // chapter-1 -> chapter_1
+  // SESUAI JSON: chapter_1, chapter_2, dst
   const chapterKey = `chapter_${id}`;
-
-  // Ambil array image
   const images = manga.image?.[chapterKey];
-  if (!images || images.length === 0) return notFound();
+
+  if (!images || images.length === 0) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center text-red-400">
+        Chapter tidak ditemukan
+      </div>
+    );
+  }
 
   return (
     <div className="bg-black min-h-screen">
@@ -30,17 +35,14 @@ export default function ReaderPage({ params }) {
 
           <div className="text-sm font-semibold truncate text-center px-4">
             {manga.title}
-            <span className="text-purple-400">
-              {" "}
-              • Chapter {id}
-            </span>
+            <span className="text-purple-400"> • Chapter {id}</span>
           </div>
 
           <div className="w-12" />
         </div>
       </div>
 
-      {/* IMAGE READER */}
+      {/* IMAGE READER (VERTIKAL / MANHWA STYLE) */}
       <div className="max-w-[900px] mx-auto flex flex-col">
         {images.map((src, index) => (
           <img
@@ -53,7 +55,7 @@ export default function ReaderPage({ params }) {
         ))}
       </div>
 
-      {/* FOOTER */}
+      {/* NAVIGASI CHAPTER */}
       <div className="max-w-[900px] mx-auto py-10 text-center text-gray-400">
         <p className="mb-4">End of Chapter</p>
 
@@ -79,4 +81,4 @@ export default function ReaderPage({ params }) {
       </div>
     </div>
   );
-                             }
+        }
