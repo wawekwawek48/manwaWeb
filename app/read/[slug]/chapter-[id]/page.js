@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import "../reader.css";
+import "../../reader.css"; // ✅ FIX PATH
 
 const dataPath = path.join(process.cwd(), "public/data/index.json");
 
