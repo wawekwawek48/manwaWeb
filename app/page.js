@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import './home.css';
 import Navbar from './components/Navbar';
 import Card from './components/Card';
