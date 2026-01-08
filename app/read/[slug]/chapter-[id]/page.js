@@ -1,106 +1,107 @@
-"use client";
+import fs from "fs";
+import path from "path";
+import Image from "next/image";
+import { notFound } from "next/navigation";
 
-import { useEffect, useState, useRef } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { getMangaBySlug } from "@/lib/data";
+const dataPath = path.join(process.cwd(), "public/data/index.json");
 
-export default function ManhwaReader({ params }) {
+// ===== helper =====
+function getAllManga() {
+  const raw = fs.readFileSync(dataPath, "utf8");
+  return JSON.parse(raw);
+}
+
+function getMangaBySlug(slug) {
+  const all = getAllManga();
+  return all.find((m) => m.id === slug);
+}
+
+// ===== page =====
+export default function ReadPage({ params }) {
   const { slug, id } = params;
-  const router = useRouter();
-  const manga = getMangaBySlug(slug);
-
   const chapterKey = `chapter_${id}`;
-  const images = manga?.image?.[chapterKey] || [];
 
-  const [showHeader, setShowHeader] = useState(true);
-  const lastScroll = useRef(0);
+  const manga = getMangaBySlug(slug);
+  if (!manga) return notFound();
 
-  /* 🔥 AUTO HIDE HEADER */
-  useEffect(() => {
-    const onScroll = () => {
-      const current = window.scrollY;
-      setShowHeader(current < lastScroll.current || current < 50);
-      lastScroll.current = current;
-    };
-
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  /* 🚀 PRELOAD NEXT CHAPTER */
-  useEffect(() => {
-    const next = `/read/${slug}/chapter-${Number(id) + 1}`;
-    router.prefetch(next);
-  }, [slug, id, router]);
-
-  if (!manga || images.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-400">
-        Chapter not found
-      </div>
-    );
-  }
+  const images = manga.image?.[chapterKey];
+  if (!images) return notFound();
 
   return (
-    <div className="bg-black min-h-screen text-white">
-
+    <div className="reader">
       {/* HEADER */}
-      <div
-        className={`fixed top-0 w-full z-50 transition-transform duration-300 ${
-          showHeader ? "translate-y-0" : "-translate-y-full"
-        }`}
-      >
-        <div className="bg-[#111] border-b border-white/10 p-4 flex justify-between items-center">
-          <Link href={`/detail/${slug}`} className="text-cyan-400">
-            ← Back
-          </Link>
+      <header className="reader-header">
+        <h1>{manga.title}</h1>
+        <p>Chapter {id}</p>
+      </header>
 
-          <div className="text-sm font-semibold truncate">
-            {manga.title} — Chapter {id}
-          </div>
-
-          <Link
-            href={`/read/${slug}/chapter-${Number(id) + 1}`}
-            className="text-purple-400"
-          >
-            Next →
-          </Link>
-        </div>
-      </div>
-
-      {/* IMAGE STRIP */}
-      <div className="pt-16 flex flex-col">
+      {/* IMAGE LIST (MANHWA STYLE) */}
+      <main className="reader-content">
         {images.map((src, i) => (
-          <img
-            key={i}
-            src={src}
-            alt={`Page ${i + 1}`}
-            className="w-full h-auto select-none"
-            loading="lazy"
-            draggable={false}
-            onDoubleClick={() => {
-              if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-              } else {
-                document.exitFullscreen();
-              }
-            }}
-          />
+          <div key={i} className="page">
+            <Image
+              src={src}
+              alt={`${manga.title} chapter ${id} page ${i + 1}`}
+              width={900}
+              height={1600}
+              priority={i < 2}
+              className="page-img"
+            />
+          </div>
         ))}
-      </div>
+      </main>
 
       {/* FOOTER */}
-      <div className="py-10 text-center bg-[#0b0b0b] text-gray-400">
-        <p className="mb-4">End of Chapter</p>
+      <footer className="reader-footer">
+        <p>End of Chapter</p>
+      </footer>
 
-        <Link
-          href={`/read/${slug}/chapter-${Number(id) + 1}`}
-          className="inline-block bg-purple-600 px-6 py-3 rounded-full text-white hover:bg-purple-500 transition"
-        >
-          Read Next Chapter
-        </Link>
-      </div>
+      {/* STYLE */}
+      <style jsx>{`
+        .reader {
+          background: #000;
+          color: #fff;
+          min-height: 100vh;
+        }
+
+        .reader-header {
+          text-align: center;
+          padding: 16px;
+          border-bottom: 1px solid #222;
+        }
+
+        .reader-header h1 {
+          font-size: 20px;
+          text-transform: capitalize;
+        }
+
+        .reader-header p {
+          color: #aaa;
+          font-size: 14px;
+        }
+
+        .reader-content {
+          max-width: 900px;
+          margin: auto;
+        }
+
+        .page {
+          margin-bottom: 0;
+        }
+
+        .page-img {
+          width: 100%;
+          height: auto;
+          display: block;
+        }
+
+        .reader-footer {
+          text-align: center;
+          padding: 24px;
+          color: #888;
+          font-size: 14px;
+        }
+      `}</style>
     </div>
   );
-        }
+    }
