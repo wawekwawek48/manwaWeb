@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Navbar from './components/Navbar';
 import Card from './components/Card';
 import { getAllManga } from '@/lib/data'; // Pastikan konfigurasi path alias '@' di next.config.js atau pakai relative path '../lib/data'
