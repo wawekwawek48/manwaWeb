@@ -1,3 +1,5 @@
+'use client';
+
 import Navbar from './components/Navbar';
 import Card from './components/Card';
 import { getAllManga } from '../lib/data'; // Pastikan path import benar '../lib/data'
